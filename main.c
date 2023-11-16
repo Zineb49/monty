@@ -1,65 +1,34 @@
 #include "monty.h"
-int par_number = 0;
+
+glob_t glob;
+
 /**
- * main - Entry point
- *@argc: argument counter
- *@argv: argumnt vector
- * Return: Always 0 (Success)
+ * main - entry point for the monty program
+ * @argc: number of command line arguments
+ * @argv: array of command line argument strings
+ *
+ * Return: 0 on success, non-zero on failure
  */
 int main(int argc, char *argv[])
 {
-	stack_t *head;
-	FILE *file;
-	char *token;
-	char *buffer;
-	size_t buffsize = 1024;
-	ssize_t line_size;
-	unsigned int line_count = 0;
+	stack_t *stack = NULL;
 
-	if (argc == 1 || argc > 2)
-	{ fprintf(stderr, "USAGE: monty file\n");
-		exit(EXIT_FAILURE); }
-	else if (argc == 2)
-	{ token = NULL;
-		head = NULL;
-		file = fopen(argv[1], "r");
-		if (file == NULL)
-		{ fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
-			/*fclose(file);*/
-			exit(EXIT_FAILURE);
-		}
-		buffer = (char *)malloc(buffsize * sizeof(char));
-		if (buffer == NULL)
-		{ fprintf(stderr, "Error: malloc failed\n");
-			free(buffer);
-			exit(EXIT_FAILURE);
-		}
-		line_size = getline(&buffer, &buffsize, file);
-
-		while (line_size >= 0)
-		{ line_count++;
-			_strtok(buffer, line_count, token, &head, file);
-			line_size = getline(&buffer, &buffsize, file);
-		}
-		free_dlistint(head);
-		free(buffer);
-		buffer = NULL;
-		fclose(file);
+	if (argc != 2)
+	{
+		fprintf(stderr, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
 	}
-	return (0);
-}
 
-/**
- *final_liberation - final liberation
- *@head: list
- *@buffer: buffer
- *@file: file to be open
- *Return: number elements.
- */
-void final_liberation(stack_t **head, char *buffer, FILE *file)
-{
-	free_dlistint(*head);
-	free(buffer);
-	buffer = NULL;
-	fclose(file);
+	glob.file = fopen(argv[1], "r");
+	if (glob.file == NULL)
+	{
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		exit(EXIT_FAILURE);
+	}
+
+	execute_file(&stack);
+	fclose(glob.file);
+	free(glob.line);
+	free_stack(stack);
+	exit(EXIT_SUCCESS);
 }
